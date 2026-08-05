@@ -1,0 +1,319 @@
+/* ===== Storybook Custom Styles ===== */
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #d4a574;
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #b8935f;
+}
+
+/* Selection */
+::selection {
+    background: #CDB4DB;
+    color: #2D3436;
+}
+
+/* Smooth scroll */
+html {
+    scroll-behavior: smooth;
+}
+
+/* ===== Card Hover Effects ===== */
+.story-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.story-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Button Bounce ===== */
+.btn-bounce {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.btn-bounce:hover {
+    transform: scale(1.05);
+}
+.btn-bounce:active {
+    transform: scale(0.95);
+}
+
+/* ===== Form Inputs ===== */
+.story-input {
+    transition: all 0.2s ease;
+    border: 2px solid #e5e7eb;
+}
+.story-input:focus {
+    border-color: #CDB4DB;
+    box-shadow: 0 0 0 4px rgba(205, 180, 219, 0.2);
+    outline: none;
+}
+.dark .story-input {
+    border-color: #334155;
+    background: #1e293b;
+    color: #e2e8f0;
+}
+.dark .story-input:focus {
+    border-color: #a78bfa;
+    box-shadow: 0 0 0 4px rgba(167, 139, 250, 0.2);
+}
+
+/* ===== Table Styles ===== */
+.story-table th {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+}
+.dark .story-table th {
+    background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
+}
+.story-table tr {
+    transition: background-color 0.15s ease;
+}
+.story-table tbody tr:hover {
+    background-color: rgba(205, 180, 219, 0.1);
+}
+.dark .story-table tbody tr:hover {
+    background-color: rgba(167, 139, 250, 0.1);
+}
+
+/* ===== Badge Styles ===== */
+.badge-story {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* ===== Toast Animations ===== */
+.toast-enter {
+    animation: toastSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.toast-exit {
+    animation: toastSlideOut 0.3s ease forwards;
+}
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(100%) scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+}
+@keyframes toastSlideOut {
+    from {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%) scale(0.9);
+        opacity: 0;
+    }
+}
+
+/* ===== Modal Animations ===== */
+.modal-backdrop {
+    animation: modalFadeIn 0.2s ease forwards;
+}
+.modal-content {
+    animation: modalScaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes modalScaleIn {
+    from {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ===== Print Styles ===== */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printContainer, #printContainer * {
+        visibility: visible;
+    }
+    #printContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+    }
+}
+
+/* ===== Loading Skeleton ===== */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+}
+.dark .skeleton {
+    background: linear-gradient(90deg, #334155 25%, #475569 50%, #334155 75%);
+    background-size: 200% 100%;
+}
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ===== POS Terminal Styles ===== */
+.pos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+.pos-item {
+    aspect-ratio: 1;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pos-item:hover {
+    transform: scale(1.05);
+    z-index: 10;
+}
+.pos-item:active {
+    transform: scale(0.95);
+}
+
+/* ===== Invoice Print ===== */
+.invoice-print {
+    font-family: 'Nunito', sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+}
+.invoice-print.thermal {
+    max-width: 320px;
+    padding: 20px;
+    font-size: 12px;
+}
+
+/* ===== E-commerce Grid ===== */
+.ecom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+/* ===== Animations for page transitions ===== */
+.page-enter {
+    animation: pageEnter 0.3s ease-out forwards;
+}
+@keyframes pageEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Floating Action Button ===== */
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 50;
+}
+.fab:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+
+/* ===== Custom Checkbox/Radio ===== */
+.story-checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+.story-checkbox:checked {
+    background: linear-gradient(135deg, #CDB4DB, #a78bfa);
+    border-color: #CDB4DB;
+}
+.story-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 6px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* ===== Pagination ===== */
+.pagination-btn {
+    transition: all 0.2s ease;
+}
+.pagination-btn:hover:not(:disabled) {
+    background-color: rgba(205, 180, 219, 0.2);
+    transform: scale(1.05);
+}
+.pagination-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ===== Stock Alert Pulse ===== */
+.stock-alert {
+    animation: stockPulse 2s ease-in-out infinite;
+}
+@keyframes stockPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+}
+
+/* ===== Drag and Drop Zone ===== */
+.drop-zone {
+    border: 2px dashed #d1d5db;
+    transition: all 0.3s ease;
+}
+.drop-zone.drag-over {
+    border-color: #CDB4DB;
+    background: rgba(205, 180, 219, 0.1);
+    transform: scale(1.02);
+}
+
+/* ===== Responsive Typography ===== */
+@media (max-width: 640px) {
+    .font-display {
+        letter-spacing: -0.02em;
+    }
+}
