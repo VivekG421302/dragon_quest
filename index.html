@@ -201,7 +201,7 @@
     <div id="mainApp" class="hidden opacity-0 transition-opacity duration-700">
 
         <!-- Top Navigation Bar -->
-        <nav class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-amber-100 dark:border-slate-700 shadow-sm">
+        <nav id="mainNav" class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-amber-100 dark:border-slate-700 shadow-sm transition-transform duration-300">
             <div class="max-w-full px-4 sm:px-6">
                 <div class="flex items-center justify-between h-16">
                     <!-- Left: Toggle + Brand -->
@@ -344,6 +344,52 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
         });
+    </script>
+
+    <script>
+    // ===== Scroll-aware navbar: hide on scroll down, show on scroll up =====
+    (function() {
+        let lastY = 0;
+        let ticking = false;
+        const THRESHOLD = 8; // px before triggering
+        const IGNORE_TOP = 60; // don't hide when near the top
+
+        function onScroll() {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const nav = document.getElementById('mainNav');
+                    if (!nav) { ticking = false; return; }
+                    const currentY = window.scrollY;
+                    const delta = currentY - lastY;
+                    if (currentY < IGNORE_TOP) {
+                        // Always show near the top
+                        nav.style.transform = 'translateY(0)';
+                    } else if (delta > THRESHOLD) {
+                        // Scrolling DOWN — hide
+                        nav.style.transform = 'translateY(-100%)';
+                    } else if (delta < -THRESHOLD) {
+                        // Scrolling UP — show instantly
+                        nav.style.transform = 'translateY(0)';
+                    }
+                    lastY = currentY;
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }
+
+        // Attach on main content area, not window (since app uses inner scroll)
+        function attachScrollListener() {
+            const mainApp = document.getElementById('mainApp');
+            if (!mainApp) { setTimeout(attachScrollListener, 200); return; }
+            // Try the scrollable content div first
+            const content = document.getElementById('mainContent') || mainApp;
+            window.addEventListener('scroll', onScroll, { passive: true });
+            // Also listen on any inner scrollable containers
+            mainApp.addEventListener('scroll', onScroll, { passive: true });
+        }
+        document.addEventListener('DOMContentLoaded', attachScrollListener);
+    })();
     </script>
 </body>
 </html>
