@@ -141,7 +141,7 @@ const DevLab = (function() {
                             </h3>
                             <div id="lab-response-meta" class="flex items-center gap-3 text-sm font-mono"></div>
                         </div>
-                        <div id="lab-response" class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 min-h-[120px] font-mono text-xs text-slate-500 dark:text-slate-400 overflow-auto" style="max-height:300px;">
+                        <div id="lab-response" class="bg-slate-50 dark:bg-slate-900 rounded-2xl p-4 min-h-[120px] font-mono text-xs text-slate-700 dark:text-slate-200 overflow-auto" style="max-height:300px;">
                             Hit <strong>Fire</strong> to send a request.
                         </div>
                     </div>
@@ -155,7 +155,7 @@ const DevLab = (function() {
                             <button onclick="DevLab.clearHistory()" class="text-xs text-slate-400 hover:text-red-500">Clear</button>
                         </div>
                         <div id="lab-history" class="space-y-1.5 max-h-48 overflow-y-auto">
-                            <div class="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No history yet.</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400 text-center py-3">No history yet.</div>
                         </div>
                     </div>
                 </div>
@@ -176,7 +176,7 @@ const DevLab = (function() {
                     <span class="px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${methodColors[ep.method]||'bg-slate-100 text-slate-600'}">${ep.method}</span>
                     <div class="min-w-0">
                         <p class="text-xs font-mono text-slate-700 dark:text-slate-300 truncate" title="${ep.path}">${ep.path}</p>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate">${ep.description}</p>
+                        <p class="text-[10px] text-slate-600 dark:text-slate-300 truncate font-medium">${ep.description}</p>
                     </div>
                 </div>`).join('')}
             </div>`;
@@ -301,7 +301,7 @@ const DevLab = (function() {
         const el = document.getElementById('lab-history');
         if (!el) return;
         if (historyLog.length === 0) {
-            el.innerHTML = '<div class="text-xs text-slate-400 dark:text-slate-500 text-center py-3">No history yet.</div>';
+            el.innerHTML = '<div class="text-xs text-slate-500 dark:text-slate-400 text-center py-3">No history yet.</div>';
             return;
         }
         const methodColors = { GET:'text-emerald-600 dark:text-emerald-400', POST:'text-blue-600 dark:text-blue-400',
