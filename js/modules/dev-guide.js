@@ -781,15 +781,15 @@ public class CorsConfig implements WebMvcConfigurer {
                 </button>
                 <div id="devguide-section-${key}" class="${isActive ? '' : 'hidden'}">
                     <div class="p-4 space-y-3 bg-white dark:bg-slate-800">
-                        <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${section.summary}</p>
+                        <p class="text-sm text-slate-700 dark:text-slate-100 leading-relaxed font-medium">${section.summary}</p>
                         ${section.concepts.map(c => `
                             <div class="border border-slate-100 dark:border-slate-700 rounded-xl p-3">
                                 <p class="font-bold text-xs text-purple-600 dark:text-purple-400 mb-1">${c.term}</p>
-                                <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">${c.detail}</p>
+                                <p class="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">${c.detail}</p>
                             </div>`).join('')}
                         ${section.code ? `
                         <div>
-                            <p class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wide">Code Example</p>
+                            <p class="text-xs font-bold text-slate-600 dark:text-slate-300 mb-1 uppercase tracking-wide">Code Example</p>
                             <pre class="bg-slate-900 text-slate-100 rounded-xl p-3 text-[11px] font-mono overflow-x-auto leading-relaxed">${escHtml(section.code)}</pre>
                         </div>` : ''}
                     </div>
@@ -829,10 +829,10 @@ public class CorsConfig implements WebMvcConfigurer {
                 <span class="px-2 py-1 rounded-lg text-xs font-bold flex-shrink-0 ${methodColors[ep.method] || 'bg-slate-100 text-slate-700'}">${ep.method}</span>
                 <code class="text-sm font-mono text-purple-600 dark:text-purple-400 font-semibold break-all">${ep.path}</code>
             </div>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-2 ml-0">${ep.description}</p>
+            <p class="text-xs text-slate-700 dark:text-slate-200 mb-2 ml-0 font-medium">${ep.description}</p>
             ${ep.query ? `<details class="mt-2"><summary class="text-xs font-bold text-slate-400 cursor-pointer">Query params</summary>
                 <div class="mt-1 bg-slate-50 dark:bg-slate-900 rounded-lg p-2 text-xs font-mono">
-                    ${Object.entries(ep.query).map(([k,v]) => `<div><span class="text-blue-500">${k}</span>: <span class="text-slate-500">${v}</span></div>`).join('')}
+                    ${Object.entries(ep.query).map(([k,v]) => `<div><span class="text-blue-500">${k}</span>: <span class="text-slate-700 dark:text-slate-200">${v}</span></div>`).join('')}
                 </div></details>` : ''}
             ${ep.body ? `<details class="mt-2"><summary class="text-xs font-bold text-slate-400 cursor-pointer">Request body</summary>
                 <pre class="mt-1 bg-slate-50 dark:bg-slate-900 rounded-lg p-2 text-xs font-mono overflow-x-auto text-slate-600 dark:text-slate-300">${JSON.stringify(ep.body, null, 2)}</pre>
