@@ -53,6 +53,10 @@ const App = (function() {
         if (debugEl) debugEl.classList.add('hidden');
 
         API.setBaseUrl(url);
+        const healthInput = document.getElementById('healthUrl');
+        const healthUrl = healthInput && healthInput.value.trim();
+        if (healthUrl) API.setHealthUrl(healthUrl);
+        else API.setHealthUrl(url); // default: same host
 
         try {
             const health = await API.checkHealth();
@@ -212,8 +216,61 @@ public class CorsConfig implements WebMvcConfigurer {
             case 'returns': return typeof Returns !== 'undefined' ? Returns.render() : moduleFallback('Returns');
             case 'ecommerce': return typeof ECommerce !== 'undefined' ? ECommerce.render() : moduleFallback('E-Commerce');
             case 'company': return typeof Company !== 'undefined' ? Company.render() : moduleFallback('Company Setup');
-            default: return dashboardTemplate();
+            default: return notFoundTemplate(pageId);
         }
+    }
+
+
+    // ===== 404 Not Found =====
+    function notFoundTemplate(pageId) {
+        return `
+        <div class="flex flex-col items-center justify-center py-24 text-center px-4">
+            <div class="relative w-48 h-48 mx-auto mb-8">
+                <div class="absolute inset-0 bg-gradient-to-br from-purple-200 to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full animate-pulse"></div>
+                <div class="absolute inset-4 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center">
+                    <svg viewBox="0 0 200 200" class="w-28 h-28">
+                        <!-- Confused dragon -->
+                        <ellipse cx="100" cy="130" rx="50" ry="38" fill="#a78bfa" opacity="0.4"/>
+                        <circle cx="100" cy="90" r="32" fill="#a78bfa" opacity="0.6"/>
+                        <!-- Eyes - one open squiggly one closed -->
+                        <path d="M84 83 Q90 78 96 83" stroke="#4c1d95" stroke-width="2.5" fill="none"/>
+                        <circle cx="112" cy="84" r="5" fill="#4c1d95" opacity="0.8"/>
+                        <circle cx="113" cy="82" r="2" fill="white" opacity="0.9"/>
+                        <!-- Question mark thought bubble -->
+                        <text x="128" y="62" fill="#7c3aed" font-size="22" font-family="monospace" font-weight="900" opacity="0.9">?</text>
+                        <!-- Snout -->
+                        <ellipse cx="100" cy="102" rx="11" ry="7" fill="#a78bfa" opacity="0.5"/>
+                        <!-- Horns -->
+                        <path d="M78 68 Q73 50 68 44" stroke="#7c3aed" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        <path d="M122 68 Q127 50 132 44" stroke="#7c3aed" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="max-w-md">
+                <h1 class="font-display text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-3">404</h1>
+                <h2 class="font-display text-2xl font-bold text-slate-800 dark:text-slate-100 mb-3">The dragon is confused!</h2>
+                <p class="text-slate-500 dark:text-slate-400 mb-2">
+                    The page <code class="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-purple-600 dark:text-purple-400 font-mono text-sm">${pageId}</code> doesn't exist in this kingdom.
+                </p>
+                <p class="text-slate-400 dark:text-slate-500 text-sm mb-8">The dragon looked everywhere — behind the scrolls, under the anvil, even in the treasury — but found nothing.</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button onclick="App.navigateTo('dashboard')"
+                        class="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-2xl shadow-lg shadow-purple-500/20 hover:scale-105 transition-transform">
+                        <i data-lucide="home" class="w-4 h-4"></i> Back to Dashboard
+                    </button>
+                    <button onclick="history.back()"
+                        class="flex items-center justify-center gap-2 px-6 py-3 border-2 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 font-bold rounded-2xl hover:border-purple-300 hover:text-purple-600 transition-colors">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Go Back
+                    </button>
+                </div>
+                <div class="mt-8 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-2xl border border-amber-200 dark:border-amber-800">
+                    <p class="text-xs text-amber-700 dark:text-amber-300 font-semibold mb-2">Available pages in this kingdom:</p>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        ${App.getNavItems().map(n => '<button onclick="App.navigateTo(\'' + n.id + '\')" class="px-3 py-1 bg-white dark:bg-slate-800 border border-amber-200 dark:border-slate-600 rounded-lg text-xs text-slate-600 dark:text-slate-300 hover:border-purple-300 hover:text-purple-600 transition-colors font-medium">' + n.label + '</button>').join('')}
+                    </div>
+                </div>
+            </div>
+        </div>`;
     }
 
     // ===== Dashboard =====
