@@ -142,18 +142,28 @@
 
             <!-- Connection Form -->
             <div class="bg-white/10 backdrop-blur-lg rounded-3xl p-6 border border-white/20 shadow-2xl">
-                <div class="flex gap-3 mb-4">
-                    <div class="relative flex-1">
-                        <i data-lucide="link" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300"></i>
-                        <input type="text" id="backendUrl" value="http://localhost:8080" 
-                            class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
-                            placeholder="Backend URL">
+                <div class="space-y-2 mb-4">
+                    <div class="flex gap-3">
+                        <div class="relative flex-1">
+                            <i data-lucide="link" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300"></i>
+                            <input type="text" id="backendUrl" value="http://localhost:8080"
+                                class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all"
+                                placeholder="API Base URL (e.g. http://localhost:8080)">
+                        </div>
+                        <button id="connectBtn" onclick="App.connectBackend()"
+                            class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                            <span>Connect</span>
+                        </button>
                     </div>
-                    <button id="connectBtn" onclick="App.connectBackend()" 
-                        class="px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-bold rounded-xl shadow-lg shadow-purple-500/30 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5"></i>
-                        <span>Connect</span>
-                    </button>
+                    <div class="relative">
+                        <i data-lucide="heart-pulse" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-300"></i>
+                        <input type="text" id="healthUrl" value=""
+                            class="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white/80 placeholder-purple-400/60 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400/60 focus:border-transparent transition-all"
+                            placeholder="Health URL (optional — defaults to API base, e.g. http://localhost:8080)">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-purple-400/80 font-mono bg-white/10 px-2 py-0.5 rounded-md">/health</span>
+                    </div>
+                    <p class="text-[11px] text-purple-300/60 text-center">Business API → <code class="bg-white/10 px-1 rounded">/api</code> &nbsp;·&nbsp; Health checks → <code class="bg-white/10 px-1 rounded">/health</code></p>
                 </div>
 
                 <div id="connectionStatus" class="flex items-center justify-center gap-2 text-sm">
