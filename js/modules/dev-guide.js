@@ -861,5 +861,5 @@ public class CorsConfig implements WebMvcConfigurer {
         render();
     }
 
-    return { toggle, render, setCategory, toggleSection };
+    return { toggle, render, setCategory, toggleSection, _businessDocs: BUSINESS_DOCS };
 })();
