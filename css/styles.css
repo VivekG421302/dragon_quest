@@ -317,3 +317,26 @@ html {
         letter-spacing: -0.02em;
     }
 }
+
+
+/* ===== Description & subtitle text legibility fix ===== */
+/* Descriptions should be clearly readable, not washed out */
+.dark .text-slate-400 { color: #cbd5e1 !important; }  /* slate-300 in dark */
+.dark .text-slate-500 { color: #94a3b8 !important; }  /* stay slate-400 in dark, not 500 */
+
+/* Explicit description class for dev panels */
+.dm-desc, .dg-desc {
+    color: #475569;  /* light mode: slate-600 */
+}
+.dark .dm-desc, .dark .dg-desc {
+    color: #cbd5e1;  /* dark mode: slate-300 */
+}
+
+/* Page subtitle / section description */
+.page-subtitle {
+    color: #475569;
+    font-size: 0.875rem;
+}
+.dark .page-subtitle {
+    color: #94a3b8;
+}
