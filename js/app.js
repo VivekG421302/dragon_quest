@@ -22,6 +22,7 @@ const App = (function() {
         { id: 'returns', label: 'Returns', icon: 'rotate-ccw', module: 'Returns' },
         { id: 'ecommerce', label: 'E-Commerce', icon: 'shopping-bag', module: 'ECommerce' },
         { id: 'company', label: 'Company Setup', icon: 'building-2', module: 'Company' },
+        { id: 'dev-lab', label: 'API Lab ⚡', icon: 'zap', module: 'DevLab' },
     ];
 
     function init() {
@@ -161,6 +162,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 <i data-lucide="${item.icon}" class="w-5 h-5 ${item.id === currentPage ? 'text-white' : 'text-slate-400 group-hover:text-purple-500 dark:group-hover:text-purple-400'} transition-colors"></i>
                 <span class="font-semibold text-sm">${item.label}</span>
                 ${item.id === 'pos' ? '<span class="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">NEW</span>' : ''}
+                ${item.id === 'dev-lab' ? '<span class="ml-auto text-[10px] bg-violet-500/30 text-violet-300 px-2 py-0.5 rounded-full font-bold">DEV</span>' : ''}
             </button>
         `).join('');
         lucide.createIcons();
@@ -216,6 +218,7 @@ public class CorsConfig implements WebMvcConfigurer {
             case 'returns': return typeof Returns !== 'undefined' ? Returns.render() : moduleFallback('Returns');
             case 'ecommerce': return typeof ECommerce !== 'undefined' ? ECommerce.render() : moduleFallback('E-Commerce');
             case 'company': return typeof Company !== 'undefined' ? Company.render() : moduleFallback('Company Setup');
+            case 'dev-lab': return typeof DevLab !== 'undefined' ? DevLab.render() : moduleFallback('API Lab');
             default: return notFoundTemplate(pageId);
         }
     }
