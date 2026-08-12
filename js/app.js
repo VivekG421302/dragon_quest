@@ -32,6 +32,13 @@ const App = (function() {
         updateUserUI();
         API.on('connected', onBackendConnected);
         API.on('disconnected', onBackendDisconnected);
+        // Global API error banner — fires for every failed request automatically
+        API.on('apierror', (detail) => {
+            // Don't double-show if module already handled it with its own toast
+            // We show the rich banner regardless — it has more info than a plain toast
+            UI.apiError(detail);
+        });
+
         API.on('unauthorized', () => { UI.toast('Session expired. Please login again.', 'warning'); navigateTo('auth'); });
         document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { UI.closeAllModals(); if (sidebarOpen) toggleSidebar(); } });
     }
