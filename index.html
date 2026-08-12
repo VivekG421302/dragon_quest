@@ -256,6 +256,33 @@
             </div>
         </nav>
 
+
+        <!-- ===== Request Progress Timeline ===== -->
+        <div id="reqProgress" style="
+            position:fixed;top:64px;left:0;right:0;z-index:9985;
+            pointer-events:none;opacity:0;
+            transition:opacity 0.15s ease;
+            font-family:ui-monospace,monospace;">
+
+            <!-- Slim top-edge progress bar -->
+            <div style="height:2px;background:transparent;position:relative;overflow:hidden;">
+                <div id="reqBar" style="
+                    position:absolute;left:0;top:0;height:100%;width:0%;
+                    background:linear-gradient(90deg,#7c3aed,#ec4899,#22d3ee);
+                    transition:width 0.4s cubic-bezier(0.4,0,0.2,1);
+                    box-shadow:0 0 8px rgba(124,58,237,0.6);"></div>
+            </div>
+
+            <!-- Timeline row -->
+            <div id="reqTimeline" style="
+                background:rgba(10,22,40,0.92);backdrop-filter:blur(12px);
+                border-bottom:1px solid rgba(30,58,95,0.8);
+                padding:6px 16px;display:flex;align-items:center;gap:0;">
+
+                <!-- Node + label template is built by JS -->
+            </div>
+        </div>
+
         <!-- Layout: Sidebar + Content -->
         <div class="flex min-h-[calc(100vh-64px)]">
             <!-- Sidebar -->
