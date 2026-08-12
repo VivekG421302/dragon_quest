@@ -1,4 +1,213 @@
 /**
+ * RequestProgress — minimalist timeline bar
+ * Shows:  ● started  ──────  ● backend received  ──────  ● response done
+ * Driven entirely from API.request(); no other code needs touching.
+ */
+const RequestProgress = (function () {
+    'use strict';
+
+    let hideTimer = null;
+    let activeCount = 0;   // concurrent requests in-flight
+
+    // Phase timestamps for the current (or most recent) request
+    let phases = { sent: null, received: null, done: null };
+    let method = 'GET';
+    let endpointLabel = '';
+
+    // ── DOM refs (lazily cached) ──────────────────────────────────────────────
+    function el(id) { return document.getElementById(id); }
+
+    // ── Public API ────────────────────────────────────────────────────────────
+
+    /** Call the instant fetch() is called */
+    function start(m, ep) {
+        clearTimeout(hideTimer);
+        activeCount++;
+        method   = m;
+        endpointLabel = ep.length > 42 ? '…' + ep.slice(-40) : ep;
+        phases   = { sent: performance.now(), received: null, done: null };
+
+        show();
+        setBar(10);
+        render('sent');
+    }
+
+    /**
+     * Call when the fetch() Promise resolves (server replied — headers received).
+     * In a standard fetch this is when we get the HTTP status, before body decode.
+     */
+    function received() {
+        if (!phases.sent) return;
+        phases.received = performance.now();
+        setBar(70);
+        render('received');
+    }
+
+    /** Call when the full response body is parsed and we're done */
+    function done(ok) {
+        if (!phases.sent) return;
+        phases.done = performance.now();
+        setBar(100, ok);
+        render('done', ok);
+
+        activeCount = Math.max(0, activeCount - 1);
+        if (activeCount === 0) {
+            // Linger for 1.8 s then fade out
+            hideTimer = setTimeout(hide, 1800);
+        }
+    }
+
+    // ── Internals ─────────────────────────────────────────────────────────────
+
+    function show() {
+        const wrap = el('reqProgress');
+        if (wrap) { wrap.style.opacity = '1'; wrap.style.pointerEvents = 'none'; }
+    }
+
+    function hide() {
+        const wrap = el('reqProgress');
+        if (wrap) {
+            wrap.style.opacity = '0';
+            // Reset bar after fade
+            setTimeout(() => setBar(0, true, true), 200);
+        }
+    }
+
+    function setBar(pct, ok, instant) {
+        const bar = el('reqBar');
+        if (!bar) return;
+        if (instant) { bar.style.transition = 'none'; bar.style.width = '0%'; return; }
+        const grad = ok === false
+            ? 'linear-gradient(90deg,#ef4444,#f87171)'     // red on error
+            : 'linear-gradient(90deg,#7c3aed,#ec4899,#22d3ee)'; // purple→pink→cyan
+        bar.style.background = grad;
+        bar.style.transition = instant ? 'none' : 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+        bar.style.width = pct + '%';
+    }
+
+    function ms(from, to) {
+        if (from == null || to == null) return null;
+        return Math.round(to - from);
+    }
+
+    function render(phase, ok) {
+        const tl = el('reqTimeline');
+        if (!tl) return;
+
+        const now = performance.now();
+        const t0  = phases.sent;
+
+        // Durations (null until that phase completes)
+        const toReceived = ms(t0, phases.received);  // network round-trip to first byte
+        const toEnd      = ms(t0, phases.done);       // total
+
+        // Colours
+        const C = {
+            done_ok:  '#22c55e',
+            done_err: '#ef4444',
+            active:   '#22d3ee',
+            waiting:  '#334155',
+            line_done:'#7c3aed',
+            line_wait:'#1e3a5f',
+            text:     '#94a3b8',
+            text_hi:  '#e2e8f0',
+            method:   { GET:'#22d3ee',POST:'#818cf8',PUT:'#f59e0b',PATCH:'#fb923c',DELETE:'#f87171' }
+        };
+
+        const mColor = C.method[method] || '#94a3b8';
+
+        // Node states
+        const s1Active = phase === 'sent';
+        const s2Active = phase === 'received';
+        const s3Active = phase === 'done';
+        const s2Done   = phase === 'received' || phase === 'done';
+        const s3Done   = phase === 'done';
+        const s3Color  = s3Done ? (ok === false ? C.done_err : C.done_ok) : (s3Active ? C.active : C.waiting);
+
+        const node = (color, pulse) =>
+            `<span style="
+                display:inline-block;width:10px;height:10px;border-radius:50%;
+                background:${color};flex-shrink:0;
+                ${pulse ? `box-shadow:0 0 0 0 ${color};animation:rp-pulse 1.2s infinite;` : ''}
+            "></span>`;
+
+        const line = (filled, label) =>
+            `<span style="display:flex;align-items:center;gap:4px;flex:1;min-width:40px;max-width:160px;">
+                <span style="flex:1;height:1px;background:${filled ? C.line_done : C.line_wait};
+                    ${filled ? 'box-shadow:0 0 4px rgba(124,58,237,0.5)' : ''};
+                    transition:background 0.3s;"></span>
+                ${label ? `<span style="font-size:10px;color:${C.text};white-space:nowrap;flex-shrink:0;">${label}</span>` : ''}
+                <span style="flex:1;height:1px;background:${filled ? C.line_done : C.line_wait};
+                    ${filled ? 'box-shadow:0 0 4px rgba(124,58,237,0.5)' : ''};
+                    transition:background 0.3s;"></span>
+            </span>`;
+
+        tl.innerHTML = `
+            <style>
+                @keyframes rp-pulse {
+                    0%   { box-shadow:0 0 0 0 rgba(34,211,238,.7); }
+                    70%  { box-shadow:0 0 0 6px rgba(34,211,238,0); }
+                    100% { box-shadow:0 0 0 0 rgba(34,211,238,0); }
+                }
+            </style>
+
+            <!-- Method + endpoint -->
+            <span style="font-size:10px;font-weight:700;color:${mColor};
+                margin-right:10px;flex-shrink:0;letter-spacing:.04em;">${method}</span>
+            <span style="font-size:10px;color:${C.text};margin-right:12px;
+                flex-shrink:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+                max-width:180px;">${endpointLabel}</span>
+
+            <!-- Timeline: node ── label ── node ── label ── node -->
+            <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+
+                <!-- ● Sent -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
+                    ${node(s1Active || s2Done || s3Done ? C.active : C.waiting, s1Active)}
+                    <span style="font-size:9px;color:${C.text_hi};white-space:nowrap;">sent</span>
+                    <span style="font-size:9px;color:${C.text};white-space:nowrap;">
+                        ${new Date().toTimeString().slice(0,8)}
+                    </span>
+                </div>
+
+                ${line(s2Done || s3Done, toReceived != null ? toReceived+'ms' : '…')}
+
+                <!-- ● Backend received -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
+                    ${node(s2Done ? C.active : (s2Active ? C.active : C.waiting), s2Active)}
+                    <span style="font-size:9px;color:${s2Done ? C.text_hi : C.text};white-space:nowrap;">backend</span>
+                    <span style="font-size:9px;color:${C.text};white-space:nowrap;">
+                        ${toReceived != null ? '+'+toReceived+'ms' : '—'}
+                    </span>
+                </div>
+
+                ${line(s3Done, toEnd != null && toReceived != null ? (toEnd - toReceived)+'ms' : '…')}
+
+                <!-- ● Response done -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0;">
+                    ${node(s3Done ? s3Color : C.waiting, false)}
+                    <span style="font-size:9px;color:${s3Done ? C.text_hi : C.text};white-space:nowrap;">
+                        ${s3Done ? (ok === false ? 'error' : 'done') : 'response'}
+                    </span>
+                    <span style="font-size:9px;color:${s3Done ? (ok===false ? C.done_err : C.done_ok) : C.text};white-space:nowrap;">
+                        ${toEnd != null ? '+'+toEnd+'ms total' : '—'}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Active count badge (when multiple requests in-flight) -->
+            ${activeCount > 1
+                ? `<span style="margin-left:10px;font-size:9px;background:#1e3a5f;
+                    color:#22d3ee;padding:2px 6px;border-radius:4px;flex-shrink:0;
+                    font-family:monospace;">${activeCount} in-flight</span>`
+                : ''}
+        `;
+    }
+
+    return { start, received, done };
+})();
+
+/**
  * API Client Module
  * Business requests go to /api/...
  * Health checks go to /health/... (separate base)
@@ -72,8 +281,10 @@ const API = (function() {
 
         try {
             console.log(`[API] ${options.method || 'GET'} ${url}`);
+            RequestProgress.start(options.method || 'GET', endpoint);
             const response = await fetch(url, { ...options, headers, signal: controller.signal, mode: 'cors' });
             clearTimeout(timeoutId);
+            RequestProgress.received();
 
             if (response.status === 401) {
                 authToken = null; localStorage.removeItem('authToken'); emit('unauthorized');
@@ -86,12 +297,14 @@ const API = (function() {
             else if (response.status !== 204) { const text = await response.text(); if (text) data = text; }
 
             if (!response.ok) throw new Error(data?.message || data?.error || `HTTP ${response.status}: ${response.statusText}`);
+            RequestProgress.done(true);
             return { success: true, data, status: response.status };
         } catch (error) {
             clearTimeout(timeoutId);
             const finalError = error.name === 'AbortError' ? new Error('Request timed out.') : error;
             const classified = classifyError(finalError, null);
             // Broadcast for global error banner — any listener can react
+            RequestProgress.done(false);
             emit('apierror', {
                 endpoint,
                 method: options.method || 'GET',
