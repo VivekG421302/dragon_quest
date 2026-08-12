@@ -89,8 +89,19 @@ const API = (function() {
             return { success: true, data, status: response.status };
         } catch (error) {
             clearTimeout(timeoutId);
-            if (error.name === 'AbortError') throw new Error('Request timed out.');
-            throw error;
+            const finalError = error.name === 'AbortError' ? new Error('Request timed out.') : error;
+            const classified = classifyError(finalError, null);
+            // Broadcast for global error banner — any listener can react
+            emit('apierror', {
+                endpoint,
+                method: options.method || 'GET',
+                url,
+                error: finalError,
+                message: finalError.message,
+                type: classified.type,
+                hint: classified.message
+            });
+            throw finalError;
         }
     }
 
