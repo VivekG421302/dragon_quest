@@ -460,6 +460,170 @@ const UI = (function() {
         return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-700 px-0.5 rounded">$1</mark>');
     }
 
+
+    // ===== Rich API Error Banner =====
+    // Called automatically by App when API.on('apierror') fires.
+    // Shows a detailed, dismissible error panel — not just a raw message.
+    function apiError(detail) {
+        // detail: { endpoint, method, url, message, type, hint }
+
+        // De-duplicate: don't stack identical errors within 3s
+        const key = detail.type + detail.endpoint;
+        if (apiError._lastKey === key && Date.now() - apiError._lastTime < 3000) return;
+        apiError._lastKey = key;
+        apiError._lastTime = Date.now();
+
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const typeConfig = {
+            CORS_OR_DOWN: {
+                icon: 'wifi-off',
+                label: 'Cannot reach server',
+                color: 'border-red-400 dark:border-red-600',
+                bg: 'bg-red-50 dark:bg-red-900/40',
+                iconColor: 'text-red-500',
+                badgeBg: 'bg-red-100 dark:bg-red-800/60',
+                badgeText: 'text-red-700 dark:text-red-200',
+                fix: 'Check that Spring Boot is running and CORS is configured.'
+            },
+            CORS: {
+                icon: 'shield-x',
+                label: 'CORS Blocked',
+                color: 'border-orange-400 dark:border-orange-600',
+                bg: 'bg-orange-50 dark:bg-orange-900/40',
+                iconColor: 'text-orange-500',
+                badgeBg: 'bg-orange-100 dark:bg-orange-800/60',
+                badgeText: 'text-orange-700 dark:text-orange-200',
+                fix: 'Add @CrossOrigin or WebMvcConfigurer.addCorsMappings() in Spring Boot.'
+            },
+            TIMEOUT: {
+                icon: 'clock',
+                label: 'Request timed out',
+                color: 'border-amber-400 dark:border-amber-600',
+                bg: 'bg-amber-50 dark:bg-amber-900/40',
+                iconColor: 'text-amber-500',
+                badgeBg: 'bg-amber-100 dark:bg-amber-800/60',
+                badgeText: 'text-amber-700 dark:text-amber-200',
+                fix: 'Server took too long. Check for slow queries or increase timeout.'
+            },
+            UNAUTHORIZED: {
+                icon: 'lock',
+                label: '401 Unauthorized',
+                color: 'border-yellow-400 dark:border-yellow-600',
+                bg: 'bg-yellow-50 dark:bg-yellow-900/40',
+                iconColor: 'text-yellow-600',
+                badgeBg: 'bg-yellow-100 dark:bg-yellow-800/60',
+                badgeText: 'text-yellow-700 dark:text-yellow-200',
+                fix: 'JWT token missing or expired. Login again.'
+            },
+            FORBIDDEN: {
+                icon: 'shield-off',
+                label: '403 Forbidden',
+                color: 'border-rose-400 dark:border-rose-600',
+                bg: 'bg-rose-50 dark:bg-rose-900/40',
+                iconColor: 'text-rose-500',
+                badgeBg: 'bg-rose-100 dark:bg-rose-800/60',
+                badgeText: 'text-rose-700 dark:text-rose-200',
+                fix: 'Your role lacks permission for this action. Check RBAC config.'
+            },
+            NOT_FOUND: {
+                icon: 'map-pin-off',
+                label: '404 Not Found',
+                color: 'border-purple-400 dark:border-purple-600',
+                bg: 'bg-purple-50 dark:bg-purple-900/40',
+                iconColor: 'text-purple-500',
+                badgeBg: 'bg-purple-100 dark:bg-purple-800/60',
+                badgeText: 'text-purple-700 dark:text-purple-200',
+                fix: 'Endpoint not mapped in the controller. Check URL and @RequestMapping.'
+            },
+            RATE_LIMITED: {
+                icon: 'gauge',
+                label: '429 Rate Limited',
+                color: 'border-pink-400 dark:border-pink-600',
+                bg: 'bg-pink-50 dark:bg-pink-900/40',
+                iconColor: 'text-pink-500',
+                badgeBg: 'bg-pink-100 dark:bg-pink-800/60',
+                badgeText: 'text-pink-700 dark:text-pink-200',
+                fix: 'Too many requests. Wait and retry, or raise your rate limit.'
+            },
+            UNKNOWN: {
+                icon: 'alert-circle',
+                label: 'API Error',
+                color: 'border-slate-400 dark:border-slate-600',
+                bg: 'bg-slate-50 dark:bg-slate-800/60',
+                iconColor: 'text-slate-500',
+                badgeBg: 'bg-slate-100 dark:bg-slate-700',
+                badgeText: 'text-slate-700 dark:text-slate-200',
+                fix: 'Check the server logs for more details.'
+            }
+        };
+
+        const cfg = typeConfig[detail.type] || typeConfig.UNKNOWN;
+        const method = detail.method || 'GET';
+        const shortEndpoint = (detail.endpoint || '').length > 45
+            ? '…' + (detail.endpoint || '').slice(-43)
+            : (detail.endpoint || '');
+
+        const methodColor = {
+            GET: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+            POST: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+            PUT: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+            PATCH: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+            DELETE: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+        }[method] || 'bg-slate-100 text-slate-700';
+
+        const el = document.createElement('div');
+        el.className = 'toast-enter pointer-events-auto w-full max-w-sm rounded-2xl border-2 shadow-xl overflow-hidden ' + cfg.color + ' ' + cfg.bg;
+        el.innerHTML = `
+            <div class="flex items-start gap-3 px-4 pt-4 pb-2">
+                <div class="flex-shrink-0 w-8 h-8 rounded-xl ${cfg.badgeBg} flex items-center justify-center">
+                    <i data-lucide="${cfg.icon}" class="w-4 h-4 ${cfg.iconColor}"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-sm font-bold text-slate-800 dark:text-slate-100">${cfg.label}</span>
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${cfg.badgeBg} ${cfg.badgeText}">${detail.type}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">${detail.message || 'An API error occurred.'}</p>
+                </div>
+                <button onclick="this.closest('[class*=toast]').remove()"
+                    class="flex-shrink-0 p-1 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4 text-slate-400"></i>
+                </button>
+            </div>
+            <div class="px-4 pb-3 space-y-1.5">
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${methodColor}">${method}</span>
+                    <code class="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">${shortEndpoint}</code>
+                </div>
+                <div class="flex items-start gap-1.5 bg-white/50 dark:bg-black/20 rounded-xl px-2.5 py-1.5">
+                    <i data-lucide="lightbulb" class="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5"></i>
+                    <span class="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">${cfg.fix}</span>
+                </div>
+                <div class="flex gap-2 pt-0.5">
+                    <button onclick="DevMonitor && DevMonitor.openTab('log')"
+                        class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1">
+                        <i data-lucide="activity" class="w-3 h-3"></i>Open Monitor
+                    </button>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(el);
+        if (window.lucide) lucide.createIcons({ nodes: [el] });
+
+        // Auto-dismiss after 8s (longer than normal toast — user needs to read the hint)
+        setTimeout(() => {
+            el.style.transition = 'opacity 0.3s, transform 0.3s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(110%)';
+            setTimeout(() => el.remove(), 300);
+        }, 8000);
+    }
+    apiError._lastKey = '';
+    apiError._lastTime = 0;
+
     // ===== Public API =====
     return {
         toast,
@@ -483,6 +647,7 @@ const UI = (function() {
         formatDate,
         formatDateTime,
         debounce,
-        highlightText
+        highlightText,
+        apiError
     };
 })();
