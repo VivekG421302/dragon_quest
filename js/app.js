@@ -11,24 +11,46 @@ const App = (function() {
     let offlineMode = false;
 
     const NAV_ITEMS = [
-        { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard', module: null },
-        { id: 'pos', label: 'POS Terminal', icon: 'scan-line', module: 'POS' },
-        { id: 'bills', label: 'Past Bills', icon: 'receipt', module: 'Bills' },
-        { id: 'inventory', label: 'Inventory', icon: 'package', module: 'Inventory' },
-        { id: 'products', label: 'Products', icon: 'box', module: 'Products' },
-        { id: 'brands', label: 'Brands', icon: 'tags', module: 'Brands' },
-        { id: 'suppliers', label: 'Suppliers', icon: 'truck', module: 'Suppliers' },
-        { id: 'stock-movement', label: 'Stock Movement', icon: 'arrow-left-right', module: 'StockMovement' },
-        { id: 'returns', label: 'Returns', icon: 'rotate-ccw', module: 'Returns' },
-        { id: 'ecommerce', label: 'E-Commerce', icon: 'shopping-bag', module: 'ECommerce' },
-        { id: 'company', label: 'Company Setup', icon: 'building-2', module: 'Company' },
-        { id: 'dev-lab', label: 'API Lab ⚡', icon: 'zap', module: 'DevLab' },
+        // ── Core ─────────────────────────────────────────────────────────────
+        { id: 'dashboard',     label: 'Dashboard',       icon: 'layout-dashboard', module: null,          group: 'core' },
+        { id: 'company',       label: 'Company',         icon: 'building-2',       module: 'Company',     group: 'core' },
+        // ── Business ─────────────────────────────────────────────────────────
+        { id: 'pos',           label: 'POS Terminal',    icon: 'scan-line',        module: 'POS',         group: 'business' },
+        { id: 'bills',         label: 'Sales & Bills',   icon: 'receipt',          module: 'Bills',       group: 'business' },
+        { id: 'customers',     label: 'Customers',       icon: 'users',            module: 'Customers',   group: 'business' },
+        { id: 'purchase',      label: 'Purchase Orders', icon: 'shopping-cart',    module: 'Purchase',    group: 'business' },
+        { id: 'suppliers',     label: 'Suppliers',       icon: 'truck',            module: 'Suppliers',   group: 'business' },
+        { id: 'products',      label: 'Products',        icon: 'box',              module: 'Products',    group: 'business' },
+        { id: 'inventory',     label: 'Inventory',       icon: 'package',          module: 'Inventory',   group: 'business' },
+        { id: 'brands',        label: 'Brands',          icon: 'tags',             module: 'Brands',      group: 'business' },
+        { id: 'stock-movement',label: 'Stock Movement',  icon: 'arrow-left-right', module: 'StockMovement', group: 'business' },
+        { id: 'returns',       label: 'Returns',         icon: 'rotate-ccw',       module: 'Returns',     group: 'business' },
+        { id: 'hrms',          label: 'HR & Employees',  icon: 'user-check',       module: 'HRMS',        group: 'business' },
+        { id: 'accounting',    label: 'Accounting',      icon: 'book-open',        module: 'Accounting',  group: 'business' },
+        { id: 'banking',       label: 'Banking',         icon: 'landmark',         module: 'Banking',     group: 'business' },
+        { id: 'trading',       label: 'Trading',         icon: 'trending-up',      module: 'Trading',     group: 'business' },
+        { id: 'ecommerce',     label: 'E-Commerce',      icon: 'shopping-bag',     module: 'ECommerce',   group: 'business' },
+        // ── Backend Practice ─────────────────────────────────────────────────
+        { id: 'auth',          label: 'Auth & JWT',      icon: 'key',              module: 'Auth',        group: 'backend' },
+        { id: 'roles',         label: 'Roles & RBAC',    icon: 'shield',           module: 'Roles',       group: 'backend' },
+        // ── Dev Tools ────────────────────────────────────────────────────────
+        { id: 'dev-lab',       label: 'API Lab ⚡',      icon: 'zap',              module: 'DevLab',      group: 'dev' },
     ];
 
     function init() {
         UI.initTheme();
         const savedUrl = localStorage.getItem('backendUrl');
-        if (savedUrl) document.getElementById('backendUrl').value = savedUrl;
+        if (savedUrl) {
+            const input = document.getElementById('backendUrl');
+            if (input) input.value = savedUrl;
+            // Restore live connection — skip overlay if we have a saved URL
+            API.restoreAndConnect();
+        }
+        const savedHealth = localStorage.getItem('healthUrl');
+        if (savedHealth) {
+            const hi = document.getElementById('healthUrl');
+            if (hi) hi.value = savedHealth;
+        }
         updateUserUI();
         API.on('connected', onBackendConnected);
         API.on('disconnected', onBackendDisconnected);
@@ -161,7 +183,16 @@ public class CorsConfig implements WebMvcConfigurer {
     // ===== Sidebar =====
     function renderSidebar() {
         const menu = document.getElementById('sidebarMenu');
-        menu.innerHTML = NAV_ITEMS.map(item => `
+        const groups = [
+            { key: 'core',     label: null },
+            { key: 'business', label: 'Business' },
+            { key: 'backend',  label: 'Practice' },
+            { key: 'dev',      label: 'Dev Tools' },
+        ];
+        menu.innerHTML = groups.map(g => {
+            const items = NAV_ITEMS.filter(n => n.group === g.key);
+            const header = g.label ? '<div class="px-3 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest text-white/30">' + g.label + '</div>' : '';
+            return header + items.map(item => `
             <button onclick="App.navigateTo('${item.id}')" data-page="${item.id}"
                 class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 group ${item.id === currentPage 
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/20' 
@@ -171,7 +202,8 @@ public class CorsConfig implements WebMvcConfigurer {
                 ${item.id === 'pos' ? '<span class="ml-auto text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">NEW</span>' : ''}
                 ${item.id === 'dev-lab' ? '<span class="ml-auto text-[10px] bg-violet-500/30 text-violet-300 px-2 py-0.5 rounded-full font-bold">DEV</span>' : ''}
             </button>
-        `).join('');
+        `).join('')
+        }).join('');
         lucide.createIcons();
     }
 
@@ -213,19 +245,30 @@ public class CorsConfig implements WebMvcConfigurer {
 
     function renderPage(pageId, params) {
         switch (pageId) {
-            case 'auth': return typeof Auth !== 'undefined' ? Auth.render() : authFallback();
-            case 'dashboard': return dashboardTemplate();
-            case 'pos': return typeof POS !== 'undefined' ? POS.render() : moduleFallback('POS Terminal');
-            case 'bills': return typeof Bills !== 'undefined' ? Bills.render() : moduleFallback('Past Bills');
-            case 'inventory': return typeof Inventory !== 'undefined' ? Inventory.render() : moduleFallback('Inventory');
-            case 'products': return typeof Products !== 'undefined' ? Products.render() : moduleFallback('Products');
-            case 'brands': return typeof Brands !== 'undefined' ? Brands.render() : moduleFallback('Brands');
-            case 'suppliers': return typeof Suppliers !== 'undefined' ? Suppliers.render() : moduleFallback('Suppliers');
-            case 'stock-movement': return typeof StockMovement !== 'undefined' ? StockMovement.render() : moduleFallback('Stock Movement');
-            case 'returns': return typeof Returns !== 'undefined' ? Returns.render() : moduleFallback('Returns');
-            case 'ecommerce': return typeof ECommerce !== 'undefined' ? ECommerce.render() : moduleFallback('E-Commerce');
-            case 'company': return typeof Company !== 'undefined' ? Company.render() : moduleFallback('Company Setup');
-            case 'dev-lab': return typeof DevLab !== 'undefined' ? DevLab.render() : moduleFallback('API Lab');
+            // Core
+            case 'auth':          return typeof Auth          !== 'undefined' ? Auth.render()          : authFallback();
+            case 'dashboard':     return dashboardTemplate();
+            case 'company':       return typeof Company       !== 'undefined' ? Company.render()       : moduleFallback('Company Setup');
+            // Business
+            case 'pos':           return typeof POS           !== 'undefined' ? POS.render()           : moduleFallback('POS Terminal');
+            case 'bills':         return typeof Bills         !== 'undefined' ? Bills.render()         : moduleFallback('Sales & Bills');
+            case 'customers':     return typeof Customers     !== 'undefined' ? Customers.render()     : moduleFallback('Customers (CRM)');
+            case 'purchase':      return typeof Purchase      !== 'undefined' ? Purchase.render()      : moduleFallback('Purchase Orders');
+            case 'suppliers':     return typeof Suppliers     !== 'undefined' ? Suppliers.render()     : moduleFallback('Suppliers');
+            case 'products':      return typeof Products      !== 'undefined' ? Products.render()      : moduleFallback('Products');
+            case 'inventory':     return typeof Inventory     !== 'undefined' ? Inventory.render()     : moduleFallback('Inventory');
+            case 'brands':        return typeof Brands        !== 'undefined' ? Brands.render()        : moduleFallback('Brands');
+            case 'stock-movement':return typeof StockMovement !== 'undefined' ? StockMovement.render() : moduleFallback('Stock Movement');
+            case 'returns':       return typeof Returns       !== 'undefined' ? Returns.render()       : moduleFallback('Returns');
+            case 'hrms':          return typeof HRMS          !== 'undefined' ? HRMS.render()          : moduleFallback('HR & Employees');
+            case 'accounting':    return typeof Accounting    !== 'undefined' ? Accounting.render()    : moduleFallback('Accounting');
+            case 'banking':       return typeof Banking       !== 'undefined' ? Banking.render()       : moduleFallback('Banking');
+            case 'trading':       return typeof Trading       !== 'undefined' ? Trading.render()       : moduleFallback('Trading');
+            case 'ecommerce':     return typeof ECommerce     !== 'undefined' ? ECommerce.render()     : moduleFallback('E-Commerce');
+            // Backend practice
+            case 'roles':         return typeof Roles         !== 'undefined' ? Roles.render()         : moduleFallback('Roles & RBAC');
+            // Dev tools
+            case 'dev-lab':       return typeof DevLab        !== 'undefined' ? DevLab.render()        : moduleFallback('API Lab');
             default: return notFoundTemplate(pageId);
         }
     }
