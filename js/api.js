@@ -380,13 +380,31 @@ const API = (function() {
 
     // ===== URL Management =====
     function setBaseUrl(url) {
-        apiBaseUrl   = url.replace(/\/$/, '');
-        healthBaseUrl = apiBaseUrl; // same host by default
+        // Strip trailing slash AND any accidental /api suffix the user may have typed
+        // so modules that pass /api/v1/... don't get double /api/api/v1/...
+        let cleaned = url.replace(/\/$/, '');
+        // If user typed http://host/api, store http://host so modules work
+        if (cleaned.match(/\/api$/i)) {
+            cleaned = cleaned.replace(/\/api$/i, '');
+        }
+        apiBaseUrl   = cleaned;
+        healthBaseUrl = cleaned;
         localStorage.setItem('backendUrl', apiBaseUrl);
+        console.log('[API] baseUrl set to:', apiBaseUrl);
     }
     function setHealthUrl(url) {
-        healthBaseUrl = url.replace(/\/$/, '');
+        healthBaseUrl = url.replace(/\/$/, '').replace(/\/api$/i, '');
         localStorage.setItem('healthUrl', healthBaseUrl);
+    }
+    /** Call once on app boot — restores saved URL and starts health check */
+    function restoreAndConnect() {
+        const saved = localStorage.getItem('backendUrl');
+        if (saved) {
+            apiBaseUrl    = saved;
+            healthBaseUrl = localStorage.getItem('healthUrl') || saved;
+            console.log('[API] Restored baseUrl from storage:', apiBaseUrl);
+            startHealthCheck();
+        }
     }
     function getBaseUrl()   { return apiBaseUrl; }
     function getHealthUrl() { return healthBaseUrl; }
@@ -466,7 +484,7 @@ const API = (function() {
     return {
         get, post, put, patch, del, request, healthRequest,
         checkHealth, startHealthCheck, stopHealthCheck,
-        setBaseUrl, setHealthUrl, getBaseUrl, getHealthUrl, getLastError,
+        setBaseUrl, setHealthUrl, getBaseUrl, getHealthUrl, getLastError, restoreAndConnect,
         setToken, getToken, isAuthenticated, isConnected: () => isConnected,
         on, off, emit,
         exportToExcel, exportToCSV,
